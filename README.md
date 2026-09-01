@@ -41,7 +41,6 @@ O sistema deverá permitir que diferentes clientes interajam com os mesmos dados
 ## Integrantes
 
 - Victor Plucinski Pavoni
-- [Nome do segundo integrante]
 
 ## Estrutura do Projeto
 

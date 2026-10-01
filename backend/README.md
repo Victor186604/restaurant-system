@@ -1,114 +1,114 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# Backend — API de comandas e pedidos
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+API REST em NestJS para o sistema de comandas e pedidos do restaurante.
+Referência completa de endpoints, regras de negócio e exemplos de JSON:
+[`docs/backend-api.md`](../docs/backend-api.md).
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## Stack
 
-## Description
+- Node.js 22 LTS
+- NestJS 11
+- Prisma 7 com `@prisma/adapter-pg` (driver `pg`)
+- PostgreSQL 18
+- class-validator / class-transformer (validação dos DTOs)
+- Vitest (testes)
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## Como executar
 
-## Project setup
+Pré-requisitos: Node.js 22 e um PostgreSQL 18 (o `docker-compose.yml` sobe um pronto).
 
 ```bash
-$ npm install
+cd backend
+
+# 1. Dependências (o postinstall já executa `prisma generate`)
+npm install
+
+# 2. Variáveis de ambiente
+cp .env.example .env        # Windows (PowerShell): Copy-Item .env.example .env
+#    Ajuste DATABASE_URL se não for usar o docker-compose.
+
+# 3. Banco de dados
+npm run db:up               # sobe o PostgreSQL 18 via Docker (opcional)
+npx prisma migrate deploy   # aplica as migrations
+npx prisma db seed          # dados de exemplo: 10 mesas, cardápio, usuários
+
+# 4. API
+npm run start:dev           # http://localhost:3000/api
 ```
 
-## Compile and run the project
+Para conferir o fluxo completo do MVP (com a API rodando, em outro terminal):
 
 ```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+npm run fluxo:mvp
 ```
 
-## Run tests
+### Usando um PostgreSQL já instalado
 
-```bash
-# unit tests
-$ npm run test
+Crie o banco e aponte a `DATABASE_URL` para ele, por exemplo:
 
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+```
+DATABASE_URL="postgresql://postgres:SUA_SENHA@localhost:5432/restaurante?schema=public"
 ```
 
-## Deployment
+Atenção ao formato: a linha deve ter **uma** atribuição e o valor entre aspas uma única vez.
+Se o valor for inválido, a API não sobe e informa o problema.
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+## Scripts
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+| Script | O que faz |
+|---|---|
+| `npm run start:dev` | API em modo watch |
+| `npm run build` / `npm run start:prod` | Compila para `dist/` / executa a versão compilada |
+| `npm test` | Testes unitários |
+| `npm run test:e2e` | Testes e2e (precisam do banco) |
+| `npm run lint` / `npm run format` | oxlint / Prettier |
+| `npm run prisma:migrate` | `prisma migrate dev` — cria nova migration após alterar o schema |
+| `npm run prisma:deploy` | `prisma migrate deploy` — aplica migrations pendentes |
+| `npm run prisma:seed` | Popula dados de exemplo (idempotente) |
+| `npm run prisma:studio` | Interface visual do banco |
+| `npm run db:up` / `npm run db:down` | Sobe/derruba o PostgreSQL do docker-compose |
+| `npm run fluxo:mvp` | Executa o fluxo principal + verificações de regras via HTTP |
 
-```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+## Usuários do seed (somente desenvolvimento)
+
+Todos com a senha `senha123`. A autenticação JWT ainda não está ativa;
+os ids servem para `garcomId` (comanda) e `criadoPorId` (pedido).
+
+| Perfil | E-mail |
+|---|---|
+| ADMIN | admin@restaurante.local |
+| GERENTE | gerente@restaurante.local |
+| GARCOM | joao@restaurante.local, maria@restaurante.local |
+| COZINHA | cozinha@restaurante.local |
+
+## Estrutura
+
+```
+backend/
+├── prisma/
+│   ├── schema.prisma         # modelo de dados
+│   ├── migrations/           # migrations SQL versionadas
+│   └── seed.ts               # dados de exemplo
+├── prisma.config.ts          # configuração da CLI do Prisma 7
+├── scripts/fluxo-mvp.mjs     # teste do fluxo principal via HTTP
+├── src/
+│   ├── main.ts               # bootstrap: prefixo /api, ValidationPipe, filtros, CORS
+│   ├── config/               # validação das variáveis de ambiente
+│   ├── prisma/               # PrismaService (Prisma Client + adapter-pg)
+│   ├── common/               # filtro de erros do Prisma, interceptor de Decimal, utilitários
+│   ├── usuarios/  mesas/  categorias/  produtos/
+│   ├── comandas/             # abertura, fechamento, cancelamento
+│   ├── pedidos/              # lançamento, fila da cozinha, máquina de estados
+│   └── generated/prisma/     # Prisma Client gerado (não versionado)
+└── test/                     # testes e2e
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+Cada módulo segue o padrão `dto/` + `*.service.ts` (regras de negócio) + `*.controller.ts` (rotas).
 
-## Observability
+## Observações
 
-In production applications, observability is essential for understanding how your system behaves, detecting issues early, and maintaining reliable performance.
-
-[NestJS Observe](https://observe.nestjs.com) automatically instruments your NestJS application, giving you deep visibility into your system with minimal setup:
-
-- **Distributed tracing:** Follow requests across services and understand how they flow through your system.
-- **Waterfall analysis:** Visualize request execution and identify slow operations, bottlenecks, and unexpected delays.
-- **Performance analysis:** Analyze application performance in real time and quickly pinpoint areas that need optimization.
-- **Metrics:** Track key application and infrastructure metrics to understand system health and performance trends.
-- **Logging:** Centralize and correlate logs with traces and other telemetry to make debugging easier.
-- **Error tracking:** Detect errors quickly and investigate their root causes with the surrounding context.
-- **SLA monitoring:** Track service-level objectives and identify when your application is approaching or exceeding defined thresholds.
-- **Alarms and alerts:** Set up alerts for critical errors, performance degradation, SLA violations, and other anomalies so your team can react quickly.
-
-## Resources
-
-Check out a few resources that may come in handy when working with NestJS:
-
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Auto-instrument your application with [NestJS Observer](https://observer.nestjs.com). Distributed tracing, metrics, and logging made easy. Error tracking and performance monitoring for your NestJS applications.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
-
-## Support
-
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+- O Prisma Client é gerado em `src/generated/prisma` (ignorado pelo Git). Após clonar ou
+  alterar o schema, rode `npx prisma generate` (o `npm install` já faz isso).
+- O schema usa a preview feature `partialIndexes` para garantir, no banco, uma única comanda
+  ativa por mesa.
+- Valores monetários são retornados como string com 2 casas (`"64.90"`).

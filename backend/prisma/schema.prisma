@@ -1,13 +1,197 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Get a free hosted Postgres database in seconds: `npx create-db`
+// Modelo de dados do sistema de comandas e pedidos.
+// Documentação: ../../docs/backend-api.md
 
 generator client {
-  provider = "prisma-client"
-  output   = "../src/generated/prisma"
+  provider               = "prisma-client"
+  output                 = "../src/generated/prisma"
+  moduleFormat           = "esm"
+  importFileExtension    = "js"
+  generatedFileExtension = "ts"
+  // partialIndexes: permite o índice único parcial que garante
+  // no máximo uma comanda ativa por mesa (ver model Comanda).
+  previewFeatures        = ["partialIndexes"]
 }
 
 datasource db {
   provider = "postgresql"
+  // A URL fica em prisma.config.ts (Prisma 7).
+}
+
+// ============================================================
+// Enums
+// ============================================================
+
+enum PerfilUsuario {
+  ADMIN
+  GERENTE
+  GARCOM
+  COZINHA
+}
+
+enum StatusMesa {
+  LIVRE
+  OCUPADA
+}
+
+enum StatusComanda {
+  ABERTA
+  FECHAMENTO_SOLICITADO
+  FECHADA
+  CANCELADA
+}
+
+enum StatusPedido {
+  PENDENTE
+  EM_PREPARO
+  PRONTO
+  ENTREGUE
+  CANCELADO
+}
+
+// ============================================================
+// Usuários (a autenticação JWT será adicionada em etapa futura)
+// ============================================================
+
+model Usuario {
+  id           Int           @id @default(autoincrement())
+  nome         String        @db.VarChar(120)
+  email        String        @unique @db.VarChar(160)
+  senhaHash    String        @map("senha_hash") @db.VarChar(255)
+  perfil       PerfilUsuario
+  ativo        Boolean       @default(true)
+  criadoEm     DateTime      @default(now()) @map("criado_em")
+  atualizadoEm DateTime      @updatedAt @map("atualizado_em")
+
+  comandasAbertas Comanda[] @relation("ComandaGarcom")
+  pedidosLancados Pedido[]  @relation("PedidoCriadoPor")
+
+  @@map("usuarios")
+}
+
+// ============================================================
+// Salão
+// ============================================================
+
+model Mesa {
+  id           Int        @id @default(autoincrement())
+  numero       Int        @unique
+  capacidade   Int        @default(4)
+  status       StatusMesa @default(LIVRE)
+  ativa        Boolean    @default(true)
+  criadoEm     DateTime   @default(now()) @map("criado_em")
+  atualizadoEm DateTime   @updatedAt @map("atualizado_em")
+
+  comandas Comanda[]
+
+  @@index([status])
+  @@map("mesas")
+}
+
+// ============================================================
+// Cardápio
+// ============================================================
+
+model Categoria {
+  id           Int      @id @default(autoincrement())
+  nome         String   @unique @db.VarChar(80)
+  ordem        Int      @default(0)
+  ativa        Boolean  @default(true)
+  criadoEm     DateTime @default(now()) @map("criado_em")
+  atualizadoEm DateTime @updatedAt @map("atualizado_em")
+
+  produtos Produto[]
+
+  @@map("categorias")
+}
+
+model Produto {
+  id           Int      @id @default(autoincrement())
+  nome         String   @db.VarChar(120)
+  descricao    String?  @db.VarChar(500)
+  preco        Decimal  @db.Decimal(10, 2)
+  categoriaId  Int      @map("categoria_id")
+  // disponivel: item está no cardápio hoje (ex.: acabou o ingrediente)
+  disponivel   Boolean  @default(true)
+  // ativo: item não foi removido do cardápio (exclusão lógica)
+  ativo        Boolean  @default(true)
+  criadoEm     DateTime @default(now()) @map("criado_em")
+  atualizadoEm DateTime @updatedAt @map("atualizado_em")
+
+  categoria   Categoria    @relation(fields: [categoriaId], references: [id], onDelete: Restrict)
+  itensPedido ItemPedido[]
+
+  @@unique([categoriaId, nome])
+  @@index([categoriaId])
+  @@map("produtos")
+}
+
+// ============================================================
+// Atendimento
+// ============================================================
+
+model Comanda {
+  id                     Int           @id @default(autoincrement())
+  mesaId                 Int           @map("mesa_id")
+  garcomId               Int?          @map("garcom_id")
+  status                 StatusComanda @default(ABERTA)
+  nomeCliente            String?       @map("nome_cliente") @db.VarChar(120)
+  observacao             String?       @db.VarChar(500)
+  // Valor final congelado no fechamento; null enquanto a comanda não é fechada.
+  total                  Decimal?      @db.Decimal(10, 2)
+  abertaEm               DateTime      @default(now()) @map("aberta_em")
+  fechamentoSolicitadoEm DateTime?     @map("fechamento_solicitado_em")
+  fechadaEm              DateTime?     @map("fechada_em")
+  canceladaEm            DateTime?     @map("cancelada_em")
+  atualizadoEm           DateTime      @updatedAt @map("atualizado_em")
+
+  mesa    Mesa     @relation(fields: [mesaId], references: [id], onDelete: Restrict)
+  garcom  Usuario? @relation("ComandaGarcom", fields: [garcomId], references: [id], onDelete: SetNull)
+  pedidos Pedido[]
+
+  // Regra de negócio garantida pelo banco: uma mesa só pode ter UMA comanda
+  // ativa (ABERTA ou FECHAMENTO_SOLICITADO) por vez.
+  @@unique([mesaId], map: "comandas_mesa_ativa_key", where: raw("status IN ('ABERTA', 'FECHAMENTO_SOLICITADO')"))
+  @@index([mesaId, status])
+  @@index([status])
+  @@map("comandas")
+}
+
+model Pedido {
+  id           Int          @id @default(autoincrement())
+  comandaId    Int          @map("comanda_id")
+  criadoPorId  Int?         @map("criado_por_id")
+  status       StatusPedido @default(PENDENTE)
+  observacao   String?      @db.VarChar(500)
+  criadoEm     DateTime     @default(now()) @map("criado_em")
+  atualizadoEm DateTime     @updatedAt @map("atualizado_em")
+  iniciadoEm   DateTime?    @map("iniciado_em")
+  prontoEm     DateTime?    @map("pronto_em")
+  entregueEm   DateTime?    @map("entregue_em")
+  canceladoEm  DateTime?    @map("cancelado_em")
+
+  comanda   Comanda      @relation(fields: [comandaId], references: [id], onDelete: Restrict)
+  criadoPor Usuario?     @relation("PedidoCriadoPor", fields: [criadoPorId], references: [id], onDelete: SetNull)
+  itens     ItemPedido[]
+
+  @@index([status, criadoEm])
+  @@index([comandaId])
+  @@map("pedidos")
+}
+
+model ItemPedido {
+  id            Int     @id @default(autoincrement())
+  pedidoId      Int     @map("pedido_id")
+  produtoId     Int     @map("produto_id")
+  quantidade    Int
+  // Preço copiado do produto no momento do pedido: alterar o cardápio
+  // depois não muda o valor de pedidos já lançados.
+  precoUnitario Decimal @map("preco_unitario") @db.Decimal(10, 2)
+  observacao    String? @db.VarChar(300)
+
+  pedido  Pedido  @relation(fields: [pedidoId], references: [id], onDelete: Cascade)
+  produto Produto @relation(fields: [produtoId], references: [id], onDelete: Restrict)
+
+  @@index([pedidoId])
+  @@index([produtoId])
+  @@map("itens_pedido")
 }

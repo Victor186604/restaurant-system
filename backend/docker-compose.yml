@@ -1,0 +1,24 @@
+# PostgreSQL 18 para desenvolvimento local.
+# Uso: docker compose up -d   (ou npm run db:up)
+services:
+  postgres:
+    image: postgres:18
+    container_name: restaurante-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: restaurante
+      POSTGRES_PASSWORD: restaurante
+      POSTGRES_DB: restaurante
+    ports:
+      - '5432:5432'
+    volumes:
+      # A partir do PostgreSQL 18 o volume deve ser montado em /var/lib/postgresql
+      - postgres-data:/var/lib/postgresql
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U restaurante -d restaurante']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  postgres-data:

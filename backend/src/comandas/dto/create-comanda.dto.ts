@@ -11,15 +11,6 @@ export class CreateComandaDto {
   @IsPositive()
   mesaId: number;
 
-  /**
-   * Garçom responsável. Opcional nesta etapa; com JWT passará a ser o
-   * usuário autenticado.
-   */
-  @IsOptional()
-  @IsInt()
-  @IsPositive()
-  garcomId?: number;
-
   @IsOptional()
   @IsString()
   @MaxLength(120)

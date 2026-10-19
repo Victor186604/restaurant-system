@@ -10,11 +10,13 @@ import { CategoriasModule } from './categorias/categorias.module.js';
 import { ProdutosModule } from './produtos/produtos.module.js';
 import { ComandasModule } from './comandas/comandas.module.js';
 import { PedidosModule } from './pedidos/pedidos.module.js';
+import { AuthModule } from './auth/auth.module.js';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true, validate: validateEnv }),
     PrismaModule,
+    AuthModule,
     UsuariosModule,
     MesasModule,
     CategoriasModule,

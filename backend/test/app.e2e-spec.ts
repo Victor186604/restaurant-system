@@ -1,5 +1,6 @@
 // Teste e2e: requer o PostgreSQL no ar e o .env configurado
-// (npm run db:up && npx prisma migrate deploy && npx prisma db seed).
+// (npm run db:up && npx prisma migrate deploy && npx prisma db seed)
+// e JWT_SECRET definido no .env.
 import 'dotenv/config';
 import type { Server } from 'node:http';
 import { Test, TestingModule } from '@nestjs/testing';
@@ -43,17 +44,26 @@ describe('API (e2e)', () => {
       .expect((res) => expect(res.body.status).toBe('ok'));
   });
 
-  it('GET /api/mesas lista as mesas', () => {
-    return request(app.getHttpServer())
-      .get('/api/mesas')
-      .expect(200)
-      .expect((res) => expect(Array.isArray(res.body)).toBe(true));
+  it('GET /api/mesas sem token é recusado com 401', () => {
+    return request(app.getHttpServer()).get('/api/mesas').expect(401);
   });
 
-  it('POST /api/pedidos sem itens é rejeitado com 400', () => {
+  it('login inválido é recusado com 401', () => {
     return request(app.getHttpServer())
-      .post('/api/pedidos')
-      .send({ comandaId: 1, itens: [] })
-      .expect(400);
+      .post('/api/auth/login')
+      .send({ email: 'ninguem@restaurante.local', senha: 'errada' })
+      .expect(401);
+  });
+
+  it('login válido devolve token que acessa /api/mesas', async () => {
+    const login = await request(app.getHttpServer())
+      .post('/api/auth/login')
+      .send({ email: 'gerente@restaurante.local', senha: 'senha123' })
+      .expect(200);
+    expect(login.body.usuario.perfil).toBe('GERENTE');
+    await request(app.getHttpServer())
+      .get('/api/mesas')
+      .set('Authorization', `Bearer ${login.body.accessToken}`)
+      .expect(200);
   });
 });

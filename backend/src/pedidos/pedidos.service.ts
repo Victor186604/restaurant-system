@@ -1,12 +1,17 @@
 import {
   ConflictException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
   UnprocessableEntityException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service.js';
-import { PerfilUsuario, StatusComanda } from '../generated/prisma/client.js';
-import { UsuariosService } from '../usuarios/usuarios.service.js';
+import {
+  PerfilUsuario,
+  StatusComanda,
+  StatusPedido,
+} from '../generated/prisma/client.js';
+import type { UsuarioAutenticado } from '../auth/auth.types.js';
 import { travarComanda } from '../common/utils/travar-comanda.js';
 import { CreatePedidoDto } from './dto/create-pedido.dto.js';
 import { UpdateStatusPedidoDto } from './dto/update-status-pedido.dto.js';
@@ -19,6 +24,31 @@ import {
 } from './pedido-status.js';
 import { formatarPedido, pedidoComMesaInclude } from './pedido.mapper.js';
 
+/** Quem pode mover um pedido para cada status (contrato v2). */
+const PERFIS_POR_STATUS_DESTINO: Record<StatusPedido, PerfilUsuario[]> = {
+  [StatusPedido.PENDENTE]: [],
+  [StatusPedido.EM_PREPARO]: [
+    PerfilUsuario.COZINHA,
+    PerfilUsuario.GERENTE,
+    PerfilUsuario.ADMIN,
+  ],
+  [StatusPedido.PRONTO]: [
+    PerfilUsuario.COZINHA,
+    PerfilUsuario.GERENTE,
+    PerfilUsuario.ADMIN,
+  ],
+  [StatusPedido.ENTREGUE]: [
+    PerfilUsuario.GARCOM,
+    PerfilUsuario.GERENTE,
+    PerfilUsuario.ADMIN,
+  ],
+  [StatusPedido.CANCELADO]: [
+    PerfilUsuario.GARCOM,
+    PerfilUsuario.GERENTE,
+    PerfilUsuario.ADMIN,
+  ],
+};
+
 const MOTIVO_COMANDA_BLOQUEADA: Partial<Record<StatusComanda, string>> = {
   [StatusComanda.FECHAMENTO_SOLICITADO]:
     'o fechamento já foi solicitado; não é possível lançar novos pedidos',
@@ -28,25 +58,14 @@ const MOTIVO_COMANDA_BLOQUEADA: Partial<Record<StatusComanda, string>> = {
 
 @Injectable()
 export class PedidosService {
-  constructor(
-    private readonly prisma: PrismaService,
-    private readonly usuarios: UsuariosService,
-  ) {}
+  constructor(private readonly prisma: PrismaService) {}
 
-  async criar(dto: CreatePedidoDto) {
+  async criar(dto: CreatePedidoDto, criadoPorId: number) {
     const pedido = await this.prisma.$transaction(async (tx) => {
       const comanda = await travarComanda(tx, dto.comandaId);
       if (comanda.status !== StatusComanda.ABERTA) {
         throw new ConflictException(
           `Não é possível lançar pedido na comanda ${comanda.id}: ${MOTIVO_COMANDA_BLOQUEADA[comanda.status]}.`,
-        );
-      }
-
-      if (dto.criadoPorId !== undefined) {
-        await this.usuarios.validarResponsavel(
-          dto.criadoPorId,
-          [PerfilUsuario.GARCOM, PerfilUsuario.GERENTE, PerfilUsuario.ADMIN],
-          tx,
         );
       }
 
@@ -78,7 +97,7 @@ export class PedidosService {
       return tx.pedido.create({
         data: {
           comandaId: comanda.id,
-          criadoPorId: dto.criadoPorId,
+          criadoPorId,
           observacao: dto.observacao,
           itens: {
             create: dto.itens.map((item) => ({
@@ -124,9 +143,19 @@ export class PedidosService {
     return formatarPedido(pedido);
   }
 
-  async alterarStatus(id: number, dto: UpdateStatusPedidoDto) {
-    const atual = await this.buscar(id);
+  async alterarStatus(
+    id: number,
+    dto: UpdateStatusPedidoDto,
+    usuario: UsuarioAutenticado,
+  ) {
     const novo = dto.status;
+    const perfisPermitidos = PERFIS_POR_STATUS_DESTINO[novo];
+    if (!perfisPermitidos.includes(usuario.perfil)) {
+      throw new ForbiddenException(
+        `O perfil ${usuario.perfil} não pode mover pedidos para ${novo}.`,
+      );
+    }
+    const atual = await this.buscar(id);
 
     if (!podeTransicionar(atual.status, novo)) {
       const permitidos = TRANSICOES_PEDIDO[atual.status];

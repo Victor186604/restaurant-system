@@ -8,6 +8,8 @@ import {
   Post,
   Query,
 } from '@nestjs/common';
+import { Perfis } from '../auth/decorators/perfis.decorator.js';
+import { PerfilUsuario } from '../generated/prisma/enums.js';
 import { ProdutosService } from './produtos.service.js';
 import { CreateProdutoDto } from './dto/create-produto.dto.js';
 import { UpdateProdutoDto } from './dto/update-produto.dto.js';
@@ -28,11 +30,13 @@ export class ProdutosController {
   }
 
   @Post()
+  @Perfis(PerfilUsuario.ADMIN, PerfilUsuario.GERENTE)
   criar(@Body() dto: CreateProdutoDto) {
     return this.produtos.criar(dto);
   }
 
   @Patch(':id')
+  @Perfis(PerfilUsuario.ADMIN, PerfilUsuario.GERENTE)
   atualizar(
     @Param('id', ParseIntPipe) id: number,
     @Body() dto: UpdateProdutoDto,

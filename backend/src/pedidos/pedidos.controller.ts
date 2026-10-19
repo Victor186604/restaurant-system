@@ -8,6 +8,10 @@ import {
   Post,
   Query,
 } from '@nestjs/common';
+import { Perfis } from '../auth/decorators/perfis.decorator.js';
+import { UsuarioAtual } from '../auth/decorators/usuario-atual.decorator.js';
+import type { UsuarioAutenticado } from '../auth/auth.types.js';
+import { PerfilUsuario } from '../generated/prisma/enums.js';
 import { PedidosService } from './pedidos.service.js';
 import { CreatePedidoDto } from './dto/create-pedido.dto.js';
 import { UpdateStatusPedidoDto } from './dto/update-status-pedido.dto.js';
@@ -18,8 +22,12 @@ export class PedidosController {
   constructor(private readonly pedidos: PedidosService) {}
 
   @Post()
-  criar(@Body() dto: CreatePedidoDto) {
-    return this.pedidos.criar(dto);
+  @Perfis(PerfilUsuario.ADMIN, PerfilUsuario.GERENTE, PerfilUsuario.GARCOM)
+  criar(
+    @Body() dto: CreatePedidoDto,
+    @UsuarioAtual() usuario: UsuarioAutenticado,
+  ) {
+    return this.pedidos.criar(dto, usuario.id);
   }
 
   @Get()
@@ -29,6 +37,7 @@ export class PedidosController {
 
   /** Declarada antes de ':id' para não ser capturada como id. */
   @Get('cozinha')
+  @Perfis(PerfilUsuario.ADMIN, PerfilUsuario.GERENTE, PerfilUsuario.COZINHA)
   cozinha() {
     return this.pedidos.cozinha();
   }
@@ -42,7 +51,9 @@ export class PedidosController {
   alterarStatus(
     @Param('id', ParseIntPipe) id: number,
     @Body() dto: UpdateStatusPedidoDto,
+    @UsuarioAtual() usuario: UsuarioAutenticado,
   ) {
-    return this.pedidos.alterarStatus(id, dto);
+    // A permissão depende do status de destino: verificada no service.
+    return this.pedidos.alterarStatus(id, dto, usuario);
   }
 }

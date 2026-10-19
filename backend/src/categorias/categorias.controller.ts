@@ -8,6 +8,8 @@ import {
   Post,
   Query,
 } from '@nestjs/common';
+import { Perfis } from '../auth/decorators/perfis.decorator.js';
+import { PerfilUsuario } from '../generated/prisma/enums.js';
 import { CategoriasService } from './categorias.service.js';
 import { CreateCategoriaDto } from './dto/create-categoria.dto.js';
 import { UpdateCategoriaDto } from './dto/update-categoria.dto.js';
@@ -28,11 +30,13 @@ export class CategoriasController {
   }
 
   @Post()
+  @Perfis(PerfilUsuario.ADMIN, PerfilUsuario.GERENTE)
   criar(@Body() dto: CreateCategoriaDto) {
     return this.categorias.criar(dto);
   }
 
   @Patch(':id')
+  @Perfis(PerfilUsuario.ADMIN, PerfilUsuario.GERENTE)
   atualizar(
     @Param('id', ParseIntPipe) id: number,
     @Body() dto: UpdateCategoriaDto,

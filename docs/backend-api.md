@@ -1,8 +1,12 @@
 # API REST — Backend (Checkpoint 1)
 
 API NestJS do sistema de comandas e pedidos. Todas as rotas ficam sob o prefixo **`/api`**
-(ex.: `http://localhost:3000/api/mesas`). Nesta etapa não há autenticação; ela será
-adicionada com JWT em etapa futura (o modelo `Usuario` com `perfil` já existe).
+(ex.: `http://localhost:3000/api/mesas`).
+
+**Autenticação (desde o Checkpoint 2):** todas as rotas exigem `Authorization: Bearer <token>`,
+exceto `GET /api` e `POST /api/auth/login`, e cada rota aceita apenas certos perfis. Login, matriz
+de permissões e códigos `401`/`403`/`429`: [`contrato-api.md`](./contrato-api.md). Os exemplos
+abaixo omitem o cabeçalho `Authorization`, mas ele é obrigatório.
 
 Instruções de instalação e execução: [`backend/README.md`](../backend/README.md).
 
@@ -27,6 +31,9 @@ Todas as respostas de erro seguem o formato do NestJS:
 | Status | Quando |
 |---|---|
 | `400 Bad Request` | Corpo/query inválido (validação dos DTOs). `message` é uma lista |
+| `401 Unauthorized` | Token ausente, inválido ou expirado; login com credenciais erradas |
+| `403 Forbidden` | O perfil do usuário não pode executar a operação |
+| `429 Too Many Requests` | Muitas tentativas de login erradas (5 em 15 min por e-mail + IP) |
 | `404 Not Found` | Mesa, comanda, pedido, produto, categoria ou usuário inexistente |
 | `409 Conflict` | Operação incompatível com o estado atual (mesa ocupada, transição de status inválida, fechar com pedido pendente, nome/número duplicado) |
 | `422 Unprocessable Entity` | Dados válidos, mas recusados pela regra (produto indisponível, mesa desativada, usuário inativo ou com perfil inadequado) |
@@ -40,8 +47,8 @@ Mesa (status: LIVRE | OCUPADA) 1───* Comanda (status: ABERTA | FECHAMENTO_
                                                 1───* ItemPedido *───1 Produto *───1 Categoria
 ```
 
-`Comanda.garcomId` e `Pedido.criadoPorId` referenciam `Usuario` e são opcionais nesta etapa
-(com JWT passarão a vir do token).
+`Comanda.garcomId` e `Pedido.criadoPorId` referenciam `Usuario` e são preenchidos com o usuário
+do token (não são enviados no corpo da requisição).
 
 ## Regras de negócio
 
@@ -97,14 +104,14 @@ sem estados inconsistentes (ex.: um pedido lançado no mesmo instante do fechame
 | POST | `/api/produtos` | Cria `{ nome, descricao?, preco, categoriaId, disponivel? }` |
 | PATCH | `/api/produtos/:id` | Altera qualquer campo, inclusive `disponivel` e `ativo` (exclusão lógica) |
 | **Comandas** | | |
-| POST | `/api/comandas` | Abre comanda `{ mesaId, garcomId?, nomeCliente?, observacao? }` |
+| POST | `/api/comandas` | Abre comanda `{ mesaId, nomeCliente?, observacao? }` (garçom = usuário do token) |
 | GET | `/api/comandas` | Lista (mais recentes primeiro). Query: `status=ABERTA,FECHAMENTO_SOLICITADO`, `mesaId` |
 | GET | `/api/comandas/:id` | Detalhe com pedidos, itens, subtotais e `resumo` |
 | POST | `/api/comandas/:id/solicitar-fechamento` | `ABERTA → FECHAMENTO_SOLICITADO` |
 | POST | `/api/comandas/:id/fechar` | Fecha, grava `total` e libera a mesa |
 | POST | `/api/comandas/:id/cancelar` | Cancela comanda sem pedidos ativos e libera a mesa |
 | **Pedidos** | | |
-| POST | `/api/pedidos` | Lança pedido `{ comandaId, criadoPorId?, observacao?, itens: [{ produtoId, quantidade, observacao? }] }` |
+| POST | `/api/pedidos` | Lança pedido `{ comandaId, observacao?, itens: [{ produtoId, quantidade, observacao? }] }` (autor = usuário do token) |
 | GET | `/api/pedidos` | Lista (mais antigos primeiro). Query: `status` (um ou vários: `status=PRONTO` ou `status=PENDENTE,EM_PREPARO`), `comandaId`, `mesaId` |
 | GET | `/api/pedidos/cozinha` | Fila da cozinha: `PENDENTE` e `EM_PREPARO`, do mais antigo ao mais novo |
 | GET | `/api/pedidos/:id` | Detalhe |
@@ -120,7 +127,9 @@ Pedidos prontos para o garçom buscar: `GET /api/pedidos?status=PRONTO` (ou `&me
 ## Fluxo principal do MVP passo a passo
 
 Os ids abaixo são os do banco recém-populado pelo seed (`npx prisma db seed`): mesas 1–10,
-produtos 1–11, garçom João = usuário 3. Ajuste conforme seus dados.
+produtos 1–11. Faça login com `joao@restaurante.local` (garçom), `cozinha@restaurante.local`
+(cozinha) ou `gerente@restaurante.local` (gerência), senha `senha123`, e use o perfil que a
+matriz de permissões exige em cada passo. Ajuste os ids conforme seus dados.
 
 O mesmo fluxo é executado automaticamente por `npm run fluxo:mvp` (com a API rodando).
 
@@ -143,7 +152,7 @@ O mesmo fluxo é executado automaticamente por `npm run fluxo:mvp` (com a API ro
 `POST /api/comandas`
 
 ```json
-{ "mesaId": 2, "garcomId": 3, "nomeCliente": "Ana" }
+{ "mesaId": 2, "nomeCliente": "Ana" }
 ```
 
 Resposta `201` (mesmo formato do passo 3).
@@ -191,7 +200,6 @@ Resposta `201` (mesmo formato do passo 3).
 ```json
 {
   "comandaId": 4,
-  "criadoPorId": 3,
   "itens": [
     { "produtoId": 4, "quantidade": 2, "observacao": "sem cebola" },
     { "produtoId": 7, "quantidade": 2 }

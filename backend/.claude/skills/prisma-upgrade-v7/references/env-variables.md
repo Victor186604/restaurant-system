@@ -59,7 +59,7 @@ npm install -D dotenv-cli
 ```json
 {
   "scripts": {
-    "db:migrate": "dotenv -e .env.local -- prisma migrate dev",
+    "db:migrate": "dotenv -e ..env -- prisma migrate dev",
     "db:push": "dotenv -e .env.development -- prisma db push"
   }
 }
@@ -73,7 +73,7 @@ import { config } from 'dotenv'
 import path from 'path'
 
 // Load specific .env file
-config({ path: path.join(__dirname, '.env.local') })
+config({ path: path.join(__dirname, '..env') })
 
 import { defineConfig, env } from 'prisma/config'
 

@@ -24,8 +24,10 @@ cd backend
 npm install
 
 # 2. Variáveis de ambiente
-cp .env.example .env        # Windows (PowerShell): Copy-Item .env.example .env
-#    Ajuste DATABASE_URL se não for usar o docker-compose.
+cp ..env .env        # Windows (PowerShell): Copy-Item ..env .env
+#    Ajuste DATABASE_URL se não for usar o docker-compose e gere o JWT_SECRET:
+#    node -e "console.log(require('crypto').randomBytes(48).toString('base64url'))"
+#    (cole o resultado em JWT_SECRET="..." no .env; a API não inicia sem ele)
 
 # 3. Banco de dados
 npm run db:up               # sobe o PostgreSQL 18 via Docker (opcional)
@@ -71,8 +73,8 @@ Se o valor for inválido, a API não sobe e informa o problema.
 
 ## Usuários do seed (somente desenvolvimento)
 
-Todos com a senha `senha123`. A autenticação JWT ainda não está ativa;
-os ids servem para `garcomId` (comanda) e `criadoPorId` (pedido).
+Todos com a senha `senha123`. Entre com `POST /api/auth/login` e envie o token em
+`Authorization: Bearer <token>`. O que cada perfil pode fazer: [`docs/contrato-api.md`](../docs/contrato-api.md).
 
 | Perfil | E-mail |
 |---|---|
@@ -92,6 +94,7 @@ backend/
 ├── prisma.config.ts          # configuração da CLI do Prisma 7
 ├── scripts/fluxo-mvp.mjs     # teste do fluxo principal via HTTP
 ├── src/
+│   ├── auth/                 # login JWT, guards globais (token + perfis), @Perfis/@Public
 │   ├── main.ts               # bootstrap: prefixo /api, ValidationPipe, filtros, CORS
 │   ├── config/               # validação das variáveis de ambiente
 │   ├── prisma/               # PrismaService (Prisma Client + adapter-pg)
@@ -112,3 +115,12 @@ Cada módulo segue o padrão `dto/` + `*.service.ts` (regras de negócio) + `*.c
 - O schema usa a preview feature `partialIndexes` para garantir, no banco, uma única comanda
   ativa por mesa.
 - Valores monetários são retornados como string com 2 casas (`"64.90"`).
+
+## Autenticação e permissões (Checkpoint 2)
+
+- `POST /api/auth/login` devolve um JWT (HS256, validade `JWT_EXPIRES_IN`, padrão 8 h).
+- Dois guards globais: `JwtAuthGuard` (exige token em toda rota, exceto as marcadas com
+  `@Public()`) e `PerfisGuard` (aplica `@Perfis(...)`). Não os desative para integrar clientes.
+- O usuário é recarregado do banco a cada requisição: desativá-lo encerra o acesso na hora.
+- Tentativas de login erradas são limitadas (5 por e-mail + IP a cada 15 min → `429`).
+- `garcomId` (comanda) e `criadoPorId` (pedido) vêm do token, não do corpo.

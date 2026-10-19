@@ -6,16 +6,12 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service.js';
 import {
-  PerfilUsuario,
   Prisma,
   StatusComanda,
   StatusMesa,
   StatusPedido,
 } from '../generated/prisma/client.js';
-import {
-  UsuariosService,
-  usuarioResumoSelect,
-} from '../usuarios/usuarios.service.js';
+import { usuarioResumoSelect } from '../usuarios/usuarios.service.js';
 import { travarComanda } from '../common/utils/travar-comanda.js';
 import { STATUS_COMANDA_ATIVA } from '../mesas/mesas.service.js';
 import {
@@ -43,32 +39,15 @@ type ComandaDetalhe = Prisma.ComandaGetPayload<{
   include: typeof comandaDetalheInclude;
 }>;
 
-const PERFIS_ATENDIMENTO = [
-  PerfilUsuario.GARCOM,
-  PerfilUsuario.GERENTE,
-  PerfilUsuario.ADMIN,
-];
-
 @Injectable()
 export class ComandasService {
-  constructor(
-    private readonly prisma: PrismaService,
-    private readonly usuarios: UsuariosService,
-  ) {}
+  constructor(private readonly prisma: PrismaService) {}
 
   /**
    * Abre uma comanda numa mesa LIVRE e ativa, marcando a mesa como OCUPADA.
    */
-  async abrir(dto: CreateComandaDto) {
+  async abrir(dto: CreateComandaDto, garcomId: number) {
     const id = await this.prisma.$transaction(async (tx) => {
-      if (dto.garcomId !== undefined) {
-        await this.usuarios.validarResponsavel(
-          dto.garcomId,
-          PERFIS_ATENDIMENTO,
-          tx,
-        );
-      }
-
       const mesa = await tx.mesa.findUnique({ where: { id: dto.mesaId } });
       if (!mesa)
         throw new NotFoundException(`Mesa ${dto.mesaId} não encontrada.`);
@@ -98,7 +77,7 @@ export class ComandasService {
       const comanda = await tx.comanda.create({
         data: {
           mesaId: mesa.id,
-          garcomId: dto.garcomId,
+          garcomId,
           nomeCliente: dto.nomeCliente,
           observacao: dto.observacao,
         },

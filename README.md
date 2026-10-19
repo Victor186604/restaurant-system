@@ -49,4 +49,15 @@ O sistema deverá permitir que diferentes clientes interajam com os mesmos dados
 - `mobile/` — Aplicativo Flutter
 - `docs/` — Documentação do projeto
 
-As aplicações serão implementadas nas próximas etapas.
+## Como executar
+
+1. Backend (API NestJS): veja [`backend/README.md`](backend/README.md).
+2. Cliente web (cozinha e gerência): veja [`web/README.md`](web/README.md).
+
+Contrato da API (autenticação, permissões e endpoints): [`docs/contrato-api.md`](docs/contrato-api.md).
+
+## Etapas
+
+- Checkpoint 1 — Backend: API REST, modelo de dados e regras de negócio.
+- Checkpoint 2 — Cliente web: autenticação JWT, cozinha, salão, comandas e cardápio.
+- Próxima etapa — Aplicativo mobile (Flutter) do garçom.

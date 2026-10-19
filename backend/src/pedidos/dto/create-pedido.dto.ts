@@ -35,15 +35,6 @@ export class CreatePedidoDto {
   @IsPositive()
   comandaId: number;
 
-  /**
-   * Usuário que lançou o pedido. Opcional nesta etapa; quando a autenticação
-   * JWT for adicionada, passará a vir do token e sairá do corpo.
-   */
-  @IsOptional()
-  @IsInt()
-  @IsPositive()
-  criadoPorId?: number;
-
   @IsOptional()
   @IsString()
   @MaxLength(500)

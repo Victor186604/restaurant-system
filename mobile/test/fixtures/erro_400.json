@@ -1,0 +1,7 @@
+{
+  "message": [
+    "O pedido deve ter pelo menos um item."
+  ],
+  "error": "Bad Request",
+  "statusCode": 400
+}

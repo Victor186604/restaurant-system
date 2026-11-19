@@ -1,0 +1,33 @@
+{
+  "id": 3,
+  "mesaId": 5,
+  "garcomId": 3,
+  "status": "ABERTA",
+  "nomeCliente": "Ana",
+  "observacao": null,
+  "total": null,
+  "abertaEm": "2026-11-19T18:19:22.371Z",
+  "fechamentoSolicitadoEm": null,
+  "fechadaEm": null,
+  "canceladaEm": null,
+  "atualizadoEm": "2026-11-19T18:19:22.371Z",
+  "mesa": {
+    "id": 5,
+    "numero": 5,
+    "status": "OCUPADA"
+  },
+  "garcom": {
+    "id": 3,
+    "nome": "Garçom João",
+    "perfil": "GARCOM"
+  },
+  "pedidos": [],
+  "resumo": {
+    "quantidadePedidos": 0,
+    "pedidosPendentesDeEntrega": 0,
+    "valorEntregue": "0.00",
+    "valorEmAndamento": "0.00",
+    "valorPrevisto": "0.00",
+    "podeFechar": true
+  }
+}

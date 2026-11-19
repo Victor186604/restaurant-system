@@ -1,0 +1,58 @@
+[
+  {
+    "id": 3,
+    "comandaId": 3,
+    "criadoPorId": 3,
+    "status": "PRONTO",
+    "observacao": "Sem pressa",
+    "criadoEm": "2026-11-19T18:19:22.424Z",
+    "atualizadoEm": "2026-11-19T18:19:22.460Z",
+    "iniciadoEm": "2026-11-19T18:19:22.442Z",
+    "prontoEm": "2026-11-19T18:19:22.460Z",
+    "entregueEm": null,
+    "canceladoEm": null,
+    "itens": [
+      {
+        "id": 4,
+        "pedidoId": 3,
+        "produtoId": 4,
+        "quantidade": 2,
+        "precoUnitario": "64.90",
+        "observacao": "ao ponto",
+        "produto": {
+          "id": 4,
+          "nome": "Filé à parmegiana"
+        },
+        "subtotal": "129.80"
+      },
+      {
+        "id": 5,
+        "pedidoId": 3,
+        "produtoId": 7,
+        "quantidade": 1,
+        "precoUnitario": "7.00",
+        "observacao": null,
+        "produto": {
+          "id": 7,
+          "nome": "Refrigerante lata"
+        },
+        "subtotal": "7.00"
+      }
+    ],
+    "criadoPor": {
+      "id": 3,
+      "nome": "Garçom João",
+      "perfil": "GARCOM"
+    },
+    "comanda": {
+      "id": 3,
+      "status": "ABERTA",
+      "nomeCliente": "Ana",
+      "mesa": {
+        "id": 5,
+        "numero": 5
+      }
+    },
+    "total": "136.80"
+  }
+]

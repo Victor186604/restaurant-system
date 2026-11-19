@@ -1,0 +1,11 @@
+{
+  "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjMsImlhdCI6MTc5NTExMjM2MiwiZXhwIjoxNzk1MTQxMTYyfQ.M--yKwSQk_40CGWbUgA-SswJHaQ5Z8hnbKzt3E8R8mE",
+  "tokenType": "Bearer",
+  "expiresIn": 28800,
+  "usuario": {
+    "id": 3,
+    "nome": "Garçom João",
+    "email": "joao@restaurante.local",
+    "perfil": "GARCOM"
+  }
+}

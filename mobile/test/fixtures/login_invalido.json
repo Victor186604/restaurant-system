@@ -1,0 +1,5 @@
+{
+  "message": "E-mail ou senha inválidos.",
+  "error": "Unauthorized",
+  "statusCode": 401
+}

@@ -1,0 +1,25 @@
+name: restaurante_garcom
+description: Aplicativo do garçom do sistema de comandas e pedidos (Checkpoint 3).
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.5.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+  # Cliente HTTP oficial do time do Dart.
+  http: ^1.2.2
+  # Guarda o JWT no Keystore (Android) / Keychain (iOS) / DPAPI (Windows).
+  flutter_secure_storage: ^9.2.4
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+
+flutter:
+  uses-material-design: true

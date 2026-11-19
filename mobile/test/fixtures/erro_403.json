@@ -1,0 +1,5 @@
+{
+  "message": "O perfil GARCOM não tem permissão para esta operação.",
+  "error": "Forbidden",
+  "statusCode": 403
+}

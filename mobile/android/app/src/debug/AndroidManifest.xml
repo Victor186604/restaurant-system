@@ -1,0 +1,8 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Somente na versão de DEBUG:
+         INTERNET para falar com a API e tráfego HTTP sem TLS, necessário para
+         acessar o backend local (http://10.0.2.2:3000 no emulador ou o IP do PC).
+         A versão de release continua exigindo HTTPS. -->
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <application android:usesCleartextTraffic="true"/>
+</manifest>

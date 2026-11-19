@@ -1,0 +1,167 @@
+[
+  {
+    "id": 1,
+    "nome": "Batata frita",
+    "descricao": "Porção de batata frita crocante",
+    "preco": "29.90",
+    "categoriaId": 1,
+    "disponivel": true,
+    "ativo": true,
+    "criadoEm": "2026-11-19T18:19:02.386Z",
+    "atualizadoEm": "2026-11-19T18:19:02.386Z",
+    "categoria": {
+      "id": 1,
+      "nome": "Entradas"
+    }
+  },
+  {
+    "id": 3,
+    "nome": "Bruschetta",
+    "descricao": "Pão italiano com tomate, manjericão e azeite",
+    "preco": "27.50",
+    "categoriaId": 1,
+    "disponivel": true,
+    "ativo": true,
+    "criadoEm": "2026-11-19T18:19:02.389Z",
+    "atualizadoEm": "2026-11-19T18:19:02.389Z",
+    "categoria": {
+      "id": 1,
+      "nome": "Entradas"
+    }
+  },
+  {
+    "id": 2,
+    "nome": "Pastel de carne (6 un.)",
+    "descricao": "Pastéis pequenos de carne moída",
+    "preco": "32.00",
+    "categoriaId": 1,
+    "disponivel": true,
+    "ativo": true,
+    "criadoEm": "2026-11-19T18:19:02.388Z",
+    "atualizadoEm": "2026-11-19T18:19:02.388Z",
+    "categoria": {
+      "id": 1,
+      "nome": "Entradas"
+    }
+  },
+  {
+    "id": 4,
+    "nome": "Filé à parmegiana",
+    "descricao": "Acompanha arroz e fritas",
+    "preco": "64.90",
+    "categoriaId": 2,
+    "disponivel": true,
+    "ativo": true,
+    "criadoEm": "2026-11-19T18:19:02.391Z",
+    "atualizadoEm": "2026-11-19T18:19:02.391Z",
+    "categoria": {
+      "id": 2,
+      "nome": "Pratos principais"
+    }
+  },
+  {
+    "id": 6,
+    "nome": "Frango grelhado",
+    "descricao": "Acompanha legumes salteados",
+    "preco": "45.90",
+    "categoriaId": 2,
+    "disponivel": true,
+    "ativo": true,
+    "criadoEm": "2026-11-19T18:19:02.393Z",
+    "atualizadoEm": "2026-11-19T18:19:02.393Z",
+    "categoria": {
+      "id": 2,
+      "nome": "Pratos principais"
+    }
+  },
+  {
+    "id": 5,
+    "nome": "Risoto de cogumelos",
+    "descricao": "Arroz arbóreo com mix de cogumelos",
+    "preco": "58.00",
+    "categoriaId": 2,
+    "disponivel": true,
+    "ativo": true,
+    "criadoEm": "2026-11-19T18:19:02.392Z",
+    "atualizadoEm": "2026-11-19T18:19:02.392Z",
+    "categoria": {
+      "id": 2,
+      "nome": "Pratos principais"
+    }
+  },
+  {
+    "id": 7,
+    "nome": "Refrigerante lata",
+    "descricao": "350 ml",
+    "preco": "7.00",
+    "categoriaId": 3,
+    "disponivel": true,
+    "ativo": true,
+    "criadoEm": "2026-11-19T18:19:02.395Z",
+    "atualizadoEm": "2026-11-19T18:19:02.395Z",
+    "categoria": {
+      "id": 3,
+      "nome": "Bebidas"
+    }
+  },
+  {
+    "id": 8,
+    "nome": "Suco natural",
+    "descricao": "Laranja, limão ou abacaxi — 500 ml",
+    "preco": "12.00",
+    "categoriaId": 3,
+    "disponivel": true,
+    "ativo": true,
+    "criadoEm": "2026-11-19T18:19:02.396Z",
+    "atualizadoEm": "2026-11-19T18:19:02.396Z",
+    "categoria": {
+      "id": 3,
+      "nome": "Bebidas"
+    }
+  },
+  {
+    "id": 9,
+    "nome": "Água mineral",
+    "descricao": "500 ml, com ou sem gás",
+    "preco": "5.00",
+    "categoriaId": 3,
+    "disponivel": true,
+    "ativo": true,
+    "criadoEm": "2026-11-19T18:19:02.397Z",
+    "atualizadoEm": "2026-11-19T18:19:02.397Z",
+    "categoria": {
+      "id": 3,
+      "nome": "Bebidas"
+    }
+  },
+  {
+    "id": 11,
+    "nome": "Petit gâteau",
+    "descricao": "Com sorvete de creme",
+    "preco": "26.90",
+    "categoriaId": 4,
+    "disponivel": true,
+    "ativo": true,
+    "criadoEm": "2026-11-19T18:19:02.399Z",
+    "atualizadoEm": "2026-11-19T18:19:02.399Z",
+    "categoria": {
+      "id": 4,
+      "nome": "Sobremesas"
+    }
+  },
+  {
+    "id": 10,
+    "nome": "Pudim de leite",
+    "descricao": "Fatia",
+    "preco": "14.00",
+    "categoriaId": 4,
+    "disponivel": true,
+    "ativo": true,
+    "criadoEm": "2026-11-19T18:19:02.398Z",
+    "atualizadoEm": "2026-11-19T18:19:02.398Z",
+    "categoria": {
+      "id": 4,
+      "nome": "Sobremesas"
+    }
+  }
+]
